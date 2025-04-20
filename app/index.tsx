@@ -9,43 +9,12 @@ import {
   View,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTasks } from "@/context/TaskContext";
 
 export default function Index() {
   const [task, setTask] = useState<string>("");
-  const [tasks, setTasks] = useState<
-    Array<{ title: string; isCompleted?: boolean }>
-  >([]);
+  const { tasks, addTask, deleteTask, markCompleted } = useTasks();
 
-  useEffect(() => {
-    const loadTasks = async () => {
-      const json = await AsyncStorage.getItem("@tasks");
-      if (json) setTasks(JSON.parse(json));
-    };
-    loadTasks();
-  }, []);
-
-  useEffect(() => {
-    AsyncStorage.setItem("@tasks", JSON.stringify(tasks));
-  }, [tasks]);
-
-  const addTask = () => {
-    if (tasks.filter((e) => e.title === task).length) return;
-    setTasks([...tasks, { title: task }]);
-  };
-
-  const markCompleted = (title: string) => {
-    const temp = tasks.map((e) => {
-      if (e.title === title) {
-        return { ...e, isCompleted: true };
-      }
-      return e;
-    });
-    setTasks(temp);
-  };
-
-  const deleteTask = (title: string) => {
-    setTasks(tasks.filter((task) => task.title !== title));
-  };
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
@@ -55,7 +24,13 @@ export default function Index() {
           onChangeText={setTask}
           style={styles.textInput}
         />
-        <Pressable onPress={addTask} style={styles.buttonContainer}>
+        <Pressable
+          onPress={() => {
+            addTask(task);
+            setTask("");
+          }}
+          style={styles.buttonContainer}
+        >
           <Text style={styles.buttonText}>Add Task</Text>
         </Pressable>
       </View>
